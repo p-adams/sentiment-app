@@ -1,25 +1,41 @@
-
-<div>
-    <textarea id="input"></textarea>
-    <canvas id="canvas" height="200" width="300"></canvas>
-</div>
-
+<head>
 <style>
-div {
+.container {
     display: flex;
 }
-canvas {
-    border: 1px solid grey;
+.sentiment-container {
+    margin-left: 10px;
+}
+#emoji {
+    font-size: 30px;
 }
 
 </style>
 
+</head>
+
+
+<div class="container">
+    <textarea id="input"></textarea>
+    <div class="sentiment-container">
+        <p id="emoji"/>
+        <p id="rank"/>
+    </div>
+   
+</div>
+
 
 <script>
-    const $data = document.querySelector("#data");
-    const $input = document.querySelector("#input")
-    const ctx = document.querySelector("#canvas").getContext("2d")
-    let timer
+    const $emoji = document.querySelector("#emoji");
+    const $rank = document.querySelector("#rank");
+    const $input = document.querySelector("#input");
+
+    let timer;
+    const pos = ['🙂', '😀', '😃', '😊', '😍'];
+    const neg = ['😕', '😟', '😩', '😤', '🤬'];
+    $emoji.innerHTML = '😐';
+    $rank.innerHTML = 'Rank = neutral: 0';
+    $input.focus();
     $input.addEventListener('keyup', e => {
         const text = e.target.value
         if(text) {
@@ -37,22 +53,19 @@ canvas {
         })
         
         const { polarity } = await fetch('/sentiment').then((res) => res.json())
-        ctx.beginPath()
-        ctx.arc(40, 40, 10, 0, Math.PI * 2)
-        ctx.stroke()
-        ctx.closePath()
-
+        const rank = Math.ceil(Math.floor((polarity * 10) / 2))
+        const idx = Math.abs(rank)
         if(polarity === 0) {
-            return;
+            $emoji.innerHTML = '😐'
+            $rank.innerHTML = 'Rank = neutral: 0'
         }
         if(polarity > 0) {
-            // draw positive
-            return
+            $emoji.innerHTML = pos[idx - 1]
+            $rank.innerHTML = `Rank = positive: ${rank}`
+        } else if(polarity < 0) {
+            $emoji.innerHTML = neg[idx - 1]
+            $rank.innerHTML = `Rank = negative: ${rank}`
         }
-
-        console.log(polarity)
-        
-
     }
 
     sendSentiment()
